@@ -1,0 +1,42 @@
+---
+title: "Solutions for Homework I"
+author: "Uğurcan Bayraktar"
+date: "11/2/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+Firstly, we import the tidyverse.
+
+```{r, message=FALSE}
+library(tidyverse)
+```
+
+Then, the data should be read. It is assigned to **revenue_data.**
+
+```{r, message=FALSE}
+revenue_data <- read_csv("data/Revenue_Chart_Full_Data_data.csv")
+```
+
+*Year (copy)*, *Format*, *Value (Actual)* columns are renamed below.  
+
+```{r}
+colnames(revenue_data)
+```
+
+As you can see above, we need to change 4th, 15th and 16th elements.  
+
+We can select these elements with **colnames** function and rename with **paste** function.
+
+```{r}
+colnames(revenue_data)[c(4, 15, 16)] <- paste(c("Format",
+                                                "Value",
+                                                "Year"))
+```
+
+If we print out the column names again, it can be seen the column names are renamed succesfully.
+
+```{r, echo=FALSE}
+colnames(revenue_data)
+```
