@@ -172,33 +172,205 @@ pre code {
 
 
 <p>Firstly, we import the tidyverse.</p>
-<pre class="r"><code>library(tidyverse)</code></pre>
+<pre class="r"><code>library(tidyverse)
+options(dplyr.print_max = 1e9)
+options(scipen = 100)</code></pre>
 <p>Then, the data should be read. It is assigned to <strong>revenue_data.</strong></p>
 <pre class="r"><code>revenue_data &lt;- read_csv(&quot;data/Revenue_Chart_Full_Data_data.csv&quot;)</code></pre>
+<div id="question-1" class="section level3">
+<h3>Question 1</h3>
 <p><em>Year (copy)</em>, <em>Format</em>, <em>Value (Actual)</em> columns are renamed below.</p>
-<pre class="r"><code>colnames(revenue_data)</code></pre>
-<pre><code>##  [1] &quot;Year of Year Date&quot;            &quot;Adjusted for Inflation Notes&quot;
-##  [3] &quot;Adjusted for Inflation Title&quot; &quot;Format&quot;                      
-##  [5] &quot;Metric&quot;                       &quot;Year&quot;                        
-##  [7] &quot;Value (For Charting)&quot;         &quot;Adjusted for Inflation Flag&quot; 
-##  [9] &quot;Year Date&quot;                    &quot;Format Value # (Billion)&quot;    
-## [11] &quot;Format Value # (Million)&quot;     &quot;Total Value # (Billion)&quot;     
-## [13] &quot;Total Value # (Million)&quot;      &quot;Total Value For Year&quot;        
-## [15] &quot;Value (Actual)&quot;               &quot;Year (copy)&quot;</code></pre>
-<p>As you can see above, we need to change 4th, 15th and 16th elements.</p>
-<p>We can select these elements with <strong>colnames</strong> function and rename with <strong>paste</strong> function.</p>
-<pre class="r"><code>colnames(revenue_data)[c(4, 15, 16)] &lt;- paste(c(&quot;Format&quot;,
-                                                &quot;Value&quot;,
-                                                &quot;Year&quot;))</code></pre>
-<p>If we print out the column names again, it can be seen the column names are renamed succesfully.</p>
-<pre><code>##  [1] &quot;Year of Year Date&quot;            &quot;Adjusted for Inflation Notes&quot;
-##  [3] &quot;Adjusted for Inflation Title&quot; &quot;Format&quot;                      
-##  [5] &quot;Metric&quot;                       &quot;Year&quot;                        
-##  [7] &quot;Value (For Charting)&quot;         &quot;Adjusted for Inflation Flag&quot; 
-##  [9] &quot;Year Date&quot;                    &quot;Format Value # (Billion)&quot;    
-## [11] &quot;Format Value # (Million)&quot;     &quot;Total Value # (Billion)&quot;     
-## [13] &quot;Total Value # (Million)&quot;      &quot;Total Value For Year&quot;        
-## [15] &quot;Value&quot;                        &quot;Year&quot;</code></pre>
+<pre class="r"><code>new_revenue_data = revenue_data %&gt;%
+                    select(`Year (copy)`, Format, `Value (Actual)`) %&gt;%
+                    rename(Year = `Year (copy)`,
+                           Format = Format,
+                           Value = `Value (Actual)`)</code></pre>
+<p>This is the first 6 rows of the subset.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Year</th>
+<th align="left">Format</th>
+<th align="right">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">2005</td>
+<td align="left">Cassette</td>
+<td align="right">13.100000</td>
+</tr>
+<tr class="even">
+<td align="right">2015</td>
+<td align="left">CD Single</td>
+<td align="right">1.196947</td>
+</tr>
+<tr class="odd">
+<td align="right">2015</td>
+<td align="left">Paid Subscription</td>
+<td align="right">1156.708514</td>
+</tr>
+<tr class="even">
+<td align="right">2017</td>
+<td align="left">Download Single</td>
+<td align="right">667.875936</td>
+</tr>
+<tr class="odd">
+<td align="right">1986</td>
+<td align="left">Vinyl Single</td>
+<td align="right">228.100000</td>
+</tr>
+<tr class="even">
+<td align="right">2003</td>
+<td align="left">DVD Audio</td>
+<td align="right">8.000000</td>
+</tr>
+</tbody>
+</table>
+<p>Then the year column is sorted.</p>
+<pre class="r"><code>new_revenue_data %&gt;%
+  filter(Year &gt;= 2018) %&gt;%
+  arrange(Year) %&gt;%
+  head() %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Year</th>
+<th align="left">Format</th>
+<th align="right">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">2018</td>
+<td align="left">Vinyl Single</td>
+<td align="right">5.7206009</td>
+</tr>
+<tr class="even">
+<td align="right">2018</td>
+<td align="left">SoundExchange Distributions</td>
+<td align="right">952.8000000</td>
+</tr>
+<tr class="odd">
+<td align="right">2018</td>
+<td align="left">Ringtones &amp; Ringbacks</td>
+<td align="right">24.9578598</td>
+</tr>
+<tr class="even">
+<td align="right">2018</td>
+<td align="left">SACD</td>
+<td align="right">0.8596997</td>
+</tr>
+<tr class="odd">
+<td align="right">2018</td>
+<td align="left">Download Music Video</td>
+<td align="right">2.2208106</td>
+</tr>
+<tr class="even">
+<td align="right">2018</td>
+<td align="left">Paid Subscription</td>
+<td align="right">4614.0185024</td>
+</tr>
+</tbody>
+</table>
+<p>Finally, calculated annually revenue from 2018 to 2020.</p>
+<pre class="r"><code>new_revenue_data %&gt;%
+  filter(Year &gt;= 2018) %&gt;%
+  group_by(Year) %&gt;%
+  summarise(`Value (Yearly)` = sum(Value)) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Year</th>
+<th align="right">Value (Yearly)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">2018</td>
+<td align="right">9738.197</td>
+</tr>
+<tr class="even">
+<td align="right">2019</td>
+<td align="right">11130.353</td>
+</tr>
+<tr class="odd">
+<td align="right">2020</td>
+<td align="right">12153.351</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="question-2" class="section level3">
+<h3>Question 2</h3>
+<p>Created a subset which is including the streaming formats.</p>
+<pre class="r"><code>streaming_revenue = revenue_data %&gt;%
+                      select(Year, Streaming = Format, Value = `Value (Actual)`) %&gt;%
+                      filter(Streaming %in% c(&quot;Paid Subscription&quot;,
+                                           &quot;On-Demand Streaming (Ad-Supported)&quot;,
+                                           &quot;Other Ad-Supported Streaming&quot;,
+                                           &quot;SoundExchange Distributions&quot;,
+                                           &quot;Limited Tier Paid Subscription&quot;),
+                                            Year == 2020) %&gt;%
+                      arrange(Streaming)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Year</th>
+<th align="left">Streaming</th>
+<th align="right">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">2020</td>
+<td align="left">Limited Tier Paid Subscription</td>
+<td align="right">723.6147</td>
+</tr>
+<tr class="even">
+<td align="right">2020</td>
+<td align="left">On-Demand Streaming (Ad-Supported)</td>
+<td align="right">1183.1214</td>
+</tr>
+<tr class="odd">
+<td align="right">2020</td>
+<td align="left">Other Ad-Supported Streaming</td>
+<td align="right">211.2476</td>
+</tr>
+<tr class="even">
+<td align="right">2020</td>
+<td align="left">Paid Subscription</td>
+<td align="right">7009.1655</td>
+</tr>
+<tr class="odd">
+<td align="right">2020</td>
+<td align="left">SoundExchange Distributions</td>
+<td align="right">947.4000</td>
+</tr>
+</tbody>
+</table>
+<p>The total streaming music revenue is approximately $10.1 billion in 2020.</p>
+<pre class="r"><code>streaming_revenue %&gt;%
+  group_by(Year)%&gt;%
+  summarise(`Streaming Revenue` = sum(Value)) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">Year</th>
+<th align="right">Streaming Revenue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">2020</td>
+<td align="right">10074.55</td>
+</tr>
+</tbody>
+</table>
+</div>
 
 
 

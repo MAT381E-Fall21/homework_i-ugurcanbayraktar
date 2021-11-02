@@ -4,6 +4,7 @@ author: "Uğurcan Bayraktar"
 date: "11/2/2021"
 output:
   pdf_document: default
+  word_document: default
   html_document: default
 ---
 
@@ -11,6 +12,8 @@ Firstly, we import the tidyverse.
 
 ```{r, message=FALSE}
 library(tidyverse)
+options(dplyr.print_max = 1e9)
+options(scipen = 100)
 ```
 
 Then, the data should be read. It is assigned to **revenue_data.**
@@ -19,24 +22,73 @@ Then, the data should be read. It is assigned to **revenue_data.**
 revenue_data <- read_csv("data/Revenue_Chart_Full_Data_data.csv")
 ```
 
+### Question 1
+
 *Year (copy)*, *Format*, *Value (Actual)* columns are renamed below.  
+  
 
 ```{r}
-colnames(revenue_data)
+new_revenue_data = revenue_data %>%
+                    select(`Year (copy)`, Format, `Value (Actual)`) %>%
+                    rename(Year = `Year (copy)`,
+                           Format = Format,
+                           Value = `Value (Actual)`)
 ```
 
-As you can see above, we need to change 4th, 15th and 16th elements.  
-
-We can select these elements with **colnames** function and rename with **paste** function.
-
-```{r}
-colnames(revenue_data)[c(4, 15, 16)] <- paste(c("Format",
-                                                "Value",
-                                                "Year"))
-```
-
-If we print out the column names again, it can be seen the column names are renamed succesfully.
+This is the first 6 rows of the subset.
 
 ```{r, echo=FALSE}
-colnames(revenue_data)
+knitr::kable(head(new_revenue_data))
 ```
+
+Then the year column is sorted.
+
+```{r, echo=1:4}
+new_revenue_data %>%
+  filter(Year >= 2018) %>%
+  arrange(Year) %>%
+  head() %>%
+  knitr::kable()
+```
+  
+Finally, calculated annually revenue from 2018 to 2020.
+  
+```{r}
+new_revenue_data %>%
+  filter(Year >= 2018) %>%
+  group_by(Year) %>%
+  summarise(`Value (Yearly)` = sum(Value)) %>%
+  knitr::kable()
+```
+
+### Question 2
+
+Created a subset which is including the streaming formats.
+
+```{r}
+streaming_revenue = revenue_data %>%
+                      select(Year, Streaming = Format, Value = `Value (Actual)`) %>%
+                      filter(Streaming %in% c("Paid Subscription",
+                                           "On-Demand Streaming (Ad-Supported)",
+                                           "Other Ad-Supported Streaming",
+                                           "SoundExchange Distributions",
+                                           "Limited Tier Paid Subscription"),
+                                            Year == 2020) %>%
+                      arrange(Streaming)
+```
+
+```{r, echo=FALSE}
+knitr::kable(head(streaming_revenue))
+```
+
+
+The total streaming music revenue is approximately $10.1 billion in 2020.
+
+```{r}
+streaming_revenue %>%
+  group_by(Year)%>%
+  summarise(`Streaming Revenue` = sum(Value)) %>%
+  knitr::kable()
+```
+
+
