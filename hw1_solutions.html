@@ -180,7 +180,7 @@ options(scipen = 100)</code></pre>
 <div id="question-1" class="section level3">
 <h3>Question 1</h3>
 <p><em>Year (copy)</em>, <em>Format</em>, <em>Value (Actual)</em> columns are renamed below.</p>
-<pre class="r"><code>new_revenue_data = revenue_data %&gt;%
+<pre class="r"><code>revenue_annually = revenue_data %&gt;%
                     select(`Year (copy)`, Format, `Value (Actual)`) %&gt;%
                     rename(Year = `Year (copy)`,
                            Format = Format,
@@ -228,11 +228,9 @@ options(scipen = 100)</code></pre>
 </tbody>
 </table>
 <p>Then the year column is sorted.</p>
-<pre class="r"><code>new_revenue_data %&gt;%
-  filter(Year &gt;= 2018) %&gt;%
-  arrange(Year) %&gt;%
-  head() %&gt;%
-  knitr::kable()</code></pre>
+<pre class="r"><code>revenue_annually = revenue_annually %&gt;%
+                  filter(Year &gt;= 2018) %&gt;%
+                  arrange(Year)</code></pre>
 <table>
 <thead>
 <tr class="header">
@@ -275,11 +273,9 @@ options(scipen = 100)</code></pre>
 </tbody>
 </table>
 <p>Finally, calculated annually revenue from 2018 to 2020.</p>
-<pre class="r"><code>new_revenue_data %&gt;%
-  filter(Year &gt;= 2018) %&gt;%
-  group_by(Year) %&gt;%
-  summarise(`Value (Yearly)` = sum(Value)) %&gt;%
-  knitr::kable()</code></pre>
+<pre class="r"><code>revenue_annually = revenue_annually %&gt;%
+                    group_by(Year) %&gt;%
+                    summarise(`Value (Yearly)` = sum(Value))</code></pre>
 <table>
 <thead>
 <tr class="header">
@@ -352,10 +348,9 @@ options(scipen = 100)</code></pre>
 </tbody>
 </table>
 <p>The total streaming music revenue is approximately $10.1 billion in 2020.</p>
-<pre class="r"><code>streaming_revenue %&gt;%
-  group_by(Year)%&gt;%
-  summarise(`Streaming Revenue` = sum(Value)) %&gt;%
-  knitr::kable()</code></pre>
+<pre class="r"><code>streaming_revenue = streaming_revenue %&gt;%
+                      group_by(Year)%&gt;%
+                      summarise(`Streaming Revenue` = sum(Value))</code></pre>
 <table>
 <thead>
 <tr class="header">
@@ -367,6 +362,66 @@ options(scipen = 100)</code></pre>
 <tr class="odd">
 <td align="right">2020</td>
 <td align="right">10074.55</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="question-3" class="section level3">
+<h3>Question 3</h3>
+<p>To begin with, I created a subset named as <strong>revenue_share</strong>, then made a new column which is named as <strong>Categories</strong> consists of <em>Streaming</em>, <em>Synchronization</em>, <em>Physical</em>, <em>Digital Downloads</em> and <em>Other</em> categories.</p>
+<pre class="r"><code>revenue_share = revenue_data %&gt;%
+                  select(Year, Format, Value= `Value (Actual)`) %&gt;%
+                  filter(Year == 2020) %&gt;%
+                  mutate(Category = case_when(
+                    Format %in% c(&quot;Paid Subscription&quot;,
+                                  &quot;On-Demand Streaming (Ad-Supported)&quot;,
+                                  &quot;Other Ad-Supported Streaming&quot;,
+                                  &quot;SoundExchange Distributions&quot;,
+                                  &quot;Limited Tier Paid Subscription&quot;) ~ &quot;Streaming&quot;,
+                    Format %in% c(&quot;Synchronization&quot;) ~ &quot;Synchronization&quot;,
+                    Format %in% c(&quot;LP/EP&quot;, &quot;CD&quot;) ~ &quot;Physical&quot;,
+                    Format %in% c(&quot;Download Album&quot;,
+                                  &quot;Download Single&quot;) ~ &quot;Digital Downloads&quot;,
+                    TRUE ~ &quot;Other&quot;))</code></pre>
+<p>Finally, I created a new column includes a revenue shares as percentages and sorted in decreasing order.</p>
+<pre class="r"><code>revenue_share = revenue_share %&gt;%
+                  group_by(Category) %&gt;%
+                  summarise(Revenue_Total = sum(Value)) %&gt;%
+                  mutate(Share = round(Revenue_Total / sum(Revenue_Total),2)) %&gt;%
+                  arrange(-Share)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Category</th>
+<th align="right">Revenue_Total</th>
+<th align="right">Share</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Streaming</td>
+<td align="right">10074.5491</td>
+<td align="right">0.83</td>
+</tr>
+<tr class="even">
+<td align="left">Physical</td>
+<td align="right">1102.9506</td>
+<td align="right">0.09</td>
+</tr>
+<tr class="odd">
+<td align="left">Digital Downloads</td>
+<td align="right">632.3201</td>
+<td align="right">0.05</td>
+</tr>
+<tr class="even">
+<td align="left">Synchronization</td>
+<td align="right">265.2361</td>
+<td align="right">0.02</td>
+</tr>
+<tr class="odd">
+<td align="left">Other</td>
+<td align="right">78.2956</td>
+<td align="right">0.01</td>
 </tr>
 </tbody>
 </table>

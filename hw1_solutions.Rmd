@@ -28,7 +28,7 @@ revenue_data <- read_csv("data/Revenue_Chart_Full_Data_data.csv")
   
 
 ```{r}
-new_revenue_data = revenue_data %>%
+revenue_annually = revenue_data %>%
                     select(`Year (copy)`, Format, `Value (Actual)`) %>%
                     rename(Year = `Year (copy)`,
                            Format = Format,
@@ -38,28 +38,35 @@ new_revenue_data = revenue_data %>%
 This is the first 6 rows of the subset.
 
 ```{r, echo=FALSE}
-knitr::kable(head(new_revenue_data))
+knitr::kable(head(revenue_annually))
 ```
 
 Then the year column is sorted.
 
-```{r, echo=1:4}
-new_revenue_data %>%
-  filter(Year >= 2018) %>%
-  arrange(Year) %>%
-  head() %>%
-  knitr::kable()
+```{r}
+revenue_annually = revenue_annually %>%
+                  filter(Year >= 2018) %>%
+                  arrange(Year)
 ```
+
+```{r, echo=FALSE}
+knitr::kable(head(revenue_annually))
+```
+
+
   
 Finally, calculated annually revenue from 2018 to 2020.
   
 ```{r}
-new_revenue_data %>%
-  filter(Year >= 2018) %>%
-  group_by(Year) %>%
-  summarise(`Value (Yearly)` = sum(Value)) %>%
-  knitr::kable()
+revenue_annually = revenue_annually %>%
+                    group_by(Year) %>%
+                    summarise(`Value (Yearly)` = sum(Value))
 ```
+
+```{r, echo=FALSE}
+knitr::kable(revenue_annually)
+```
+
 
 ### Question 2
 
@@ -85,10 +92,67 @@ knitr::kable(head(streaming_revenue))
 The total streaming music revenue is approximately $10.1 billion in 2020.
 
 ```{r}
-streaming_revenue %>%
-  group_by(Year)%>%
-  summarise(`Streaming Revenue` = sum(Value)) %>%
-  knitr::kable()
+streaming_revenue = streaming_revenue %>%
+                      group_by(Year)%>%
+                      summarise(`Streaming Revenue` = sum(Value))
 ```
+
+```{r, echo=FALSE}
+knitr::kable(streaming_revenue)
+```
+
+### Question 3
+
+To begin with, I created a subset named as **revenue_share**, then made a new column which is named as **Categories** consists of _Streaming_, _Synchronization_, _Physical_, _Digital Downloads_ and _Other_ categories. 
+
+```{r}
+revenue_share = revenue_data %>%
+                  select(Year, Format, Value= `Value (Actual)`) %>%
+                  filter(Year == 2020) %>%
+                  mutate(Category = case_when(
+                    Format %in% c("Paid Subscription",
+                                  "On-Demand Streaming (Ad-Supported)",
+                                  "Other Ad-Supported Streaming",
+                                  "SoundExchange Distributions",
+                                  "Limited Tier Paid Subscription") ~ "Streaming",
+                    Format %in% c("Synchronization") ~ "Synchronization",
+                    Format %in% c("LP/EP", "CD") ~ "Physical",
+                    Format %in% c("Download Album",
+                                  "Download Single") ~ "Digital Downloads",
+                    TRUE ~ "Other"))
+```
+
+Finally, I created a new column includes a revenue shares as percentages and sorted in decreasing order.
+
+```{r}
+revenue_share = revenue_share %>%
+                  group_by(Category) %>%
+                  summarise(Revenue_Total = sum(Value)) %>%
+                  mutate(Share = round(Revenue_Total / sum(Revenue_Total),2)) %>%
+                  arrange(-Share)
+```
+
+```{r, echo = FALSE}
+knitr::kable(revenue_share)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
