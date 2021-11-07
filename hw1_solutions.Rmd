@@ -1,11 +1,11 @@
 ---
 title: "Solutions for Homework I"
 author: "Uğurcan Bayraktar"
-date: "11/2/2021"
+date: "11/07/2021"
 output:
-  pdf_document: default
-  word_document: default
   html_document: default
+  word_document: default
+  pdf_document: default
 ---
 
 Firstly, we import the tidyverse.
@@ -136,10 +136,59 @@ revenue_share = revenue_share %>%
 knitr::kable(revenue_share)
 ```
 
+### Question 4
+
+```{r}
+radio_revenue <- revenue_data %>%
+                    select(Year, Format, Value = `Value (For Charting)`) %>%
+                    filter(Year >= 2018,
+                           Format %in% c("SoundExchange Distributions",
+                                         "Other Ad-Supported Streaming")) %>%
+                    arrange(Year)
+```
+
+```{r}
+radrev_annually <- radio_revenue %>%
+                    group_by(Year) %>%
+                    summarise(Value_Annually = sum(Value))
+```
 
 
+```{r}
+g <- ggplot(radio_revenue, aes(x = Year,
+                               y = Value,
+                               fill = factor(Format,
+                               levels = c("Other Ad-Supported Streaming",
+                                          "SoundExchange Distributions")))) +
+       geom_bar(stat = "identity") +
+       labs(x = "", y = "$ MILLIONS",
+            title = "U.S. DIGITAL AND CUSTOMIZED RADIO REVENUES",
+            subtitle = "Source: RIAA")+
+       theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+             plot.subtitle = element_text(hjust = 0.5),
+             legend.position = c(0.5,0),
+             legend.margin = margin(0,0,-23,0),
+             legend.box.margin = margin(0,0,-23,0),
+             legend.direction = "horizontal",
+             legend.text = element_text(size = 11)) +
+       scale_fill_manual("", 
+                       values = c("SoundExchange Distributions"  = "#2d7a7a",
+                                  "Other Ad-Supported Streaming" = "#c2da74"))
+```
 
-
+```{r}
+g + 
+  theme(panel.background = element_blank(),
+        axis.ticks = element_blank(),
+        axis.line = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.text.x = element_text(vjust = 5, size = 12),
+        axis.title.y = element_text(size = 12)) +
+  geom_hline(yintercept = 0)+
+  geom_text(aes(Year, Value_Annually, 
+                label = sprintf("$%d", round(Value_Annually)), fontface=2, fill = NULL),
+                size = 4.25, vjust = -0.25, data = radrev_annually)
+```
 
 
 
