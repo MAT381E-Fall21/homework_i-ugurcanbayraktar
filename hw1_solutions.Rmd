@@ -1,12 +1,12 @@
 ---
 title: "Solutions for Homework I"
 author: "Uğurcan Bayraktar"
-date: "11/07/2021"
+date: "11/15/2021"
 output:
-  html_document: default
-  word_document: default
   pdf_document: default
+  html_document: default
 ---
+### Question 1
 
 Firstly, we import the tidyverse.
 
@@ -18,11 +18,12 @@ options(scipen = 100)
 
 Then, the data should be read. It is assigned to **revenue_data.**
 
+
 ```{r, message=FALSE}
 revenue_data <- read_csv("data/Revenue_Chart_Full_Data_data.csv")
 ```
 
-### Question 1
+### Question 2
 
 *Year (copy)*, *Format*, *Value (Actual)* columns are renamed below.  
   
@@ -55,7 +56,7 @@ knitr::kable(head(revenue_annually))
 
 
   
-Finally, calculated annually revenue from 2018 to 2020.
+Finally, annually revenue is calculated  from 2018 to 2020.
   
 ```{r}
 revenue_annually = revenue_annually %>%
@@ -68,9 +69,9 @@ knitr::kable(revenue_annually)
 ```
 
 
-### Question 2
+### Question 3
 
-Created a subset which is including the streaming formats.
+Created a subset that includes the streaming formats.
 
 ```{r}
 streaming_revenue = revenue_data %>%
@@ -101,7 +102,7 @@ streaming_revenue = streaming_revenue %>%
 knitr::kable(streaming_revenue)
 ```
 
-### Question 3
+### Question 4
 
 To begin with, I created a subset named as **revenue_share**, then made a new column which is named as **Categories** consists of _Streaming_, _Synchronization_, _Physical_, _Digital Downloads_ and _Other_ categories. 
 
@@ -136,7 +137,9 @@ revenue_share = revenue_share %>%
 knitr::kable(revenue_share)
 ```
 
-### Question 4
+### Question 5
+
+Radio revenue data is created below. It includes _SoundExchange Distributions_ and _Other Ad-Supported Streaming_ revenues from 2018 to 2020.
 
 ```{r}
 radio_revenue <- revenue_data %>%
@@ -147,61 +150,63 @@ radio_revenue <- revenue_data %>%
                     arrange(Year)
 ```
 
+Here is another subset created for charting the **annually revenues** in the **radio revenue** data.
+
 ```{r}
 radrev_annually <- radio_revenue %>%
                     group_by(Year) %>%
                     summarise(Value_Annually = sum(Value))
 ```
 
+Graph is created below.
 
 ```{r}
+#Creating graph with ggplot
+#Filled the stack bars in order with levels
 g <- ggplot(radio_revenue, aes(x = Year,
                                y = Value,
                                fill = factor(Format,
-                               levels = c("Other Ad-Supported Streaming",
-                                          "SoundExchange Distributions")))) +
-       geom_bar(stat = "identity") +
+                                             levels = c("Other Ad-Supported Streaming",
+                                                        "SoundExchange Distributions")))) +
+       geom_bar(stat = "identity") + #Bar graph will be used
+       
+       #Labels are created as same as the original figure.
        labs(x = "", y = "$ MILLIONS",
             title = "U.S. DIGITAL AND CUSTOMIZED RADIO REVENUES",
             subtitle = "Source: RIAA")+
+  
+       #Theme is updated: title, subtitle and legend are adjusted.
        theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
-             plot.subtitle = element_text(hjust = 0.5),
-             legend.position = c(0.5,0),
-             legend.margin = margin(0,0,-23,0),
-             legend.box.margin = margin(0,0,-23,0),
-             legend.direction = "horizontal",
-             legend.text = element_text(size = 11)) +
-       scale_fill_manual("", 
+            plot.subtitle = element_text(hjust = 0.5),
+            legend.position = c(0.5,0),
+            legend.margin = margin(0,0,-23,0),
+            legend.box.margin = margin(0,0,-23,0),
+            legend.direction = "horizontal",
+            legend.text = element_text(size = 11)) +
+            #Filling colors: Online hex identifier is used to obtain hex values.
+            scale_fill_manual("", 
                        values = c("SoundExchange Distributions"  = "#2d7a7a",
                                   "Other Ad-Supported Streaming" = "#c2da74"))
 ```
 
+Combined our graph with the annual revenues.
+
 ```{r}
 g + 
+  #Background and axes are removed. 
+  #Text of x axis and the title of y axis are resized and positioned properly.
   theme(panel.background = element_blank(),
-        axis.ticks = element_blank(),
-        axis.line = element_blank(),
-        axis.text.y  = element_blank(),
-        axis.text.x = element_text(vjust = 5, size = 12),
-        axis.title.y = element_text(size = 12)) +
-  geom_hline(yintercept = 0)+
+          axis.ticks = element_blank(),
+          axis.line = element_blank(),
+          axis.text.y  = element_blank(),
+          axis.text.x = element_text(vjust = 5, size = 12),
+          axis.title.y = element_text(size = 12)) +
+  #X axis  was not at the bottom of the stacked bar,
+  #Therefore geom_hline() is used to create an x axis same as the original figure.
+  geom_hline(yintercept = 0) +
+
+  #Text for the value of annual revenue is created. Adjusted its text, font and position properly.
   geom_text(aes(Year, Value_Annually, 
                 label = sprintf("$%d", round(Value_Annually)), fontface=2, fill = NULL),
                 size = 4.25, vjust = -0.25, data = radrev_annually)
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
